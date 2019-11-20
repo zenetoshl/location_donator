@@ -11,7 +11,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Location Donator0',
+      title: 'Location Donator',
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -22,9 +22,9 @@ class MyApp extends StatelessWidget {
         // or simply save your changes to "hot reload" in a Flutter IDE).
         // Notice that the counter didn't reset back to zero; the application
         // is not restarted.
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.indigo,
       ),
-      home: MyHomePage(title: 'Location Donator'),
+      home: MyHomePage(title: 'Dogled GPS'),
     );
   }
 }
@@ -51,15 +51,13 @@ class _MyHomePageState extends State<MyHomePage> {
   FlutterBlue flutterBlue = FlutterBlue.instance;
   BluetoothDevice device;
   BluetoothCharacteristic writeLatChar;
-  BluetoothCharacteristic writeLngChar;
   Latin1Codec latin = new Latin1Codec();
   Location locationService = new Location();
   String lat = '', lng = '';
   bool loading = false;
   bool scanning = false;
   String id = '';
-  final String writeLatCharId = '560d029d-57a1-4ccc-8868-9e4b4ef41da6';
-  final String writeLngCharId = 'db433ed3-1e84-49d9-b287-487440e7137c';
+  final String writeLatCharId = 'e012c323-3e07-4a41-acdd-2bd9cc2c4ffa';
   final String serviceId = '37f64eb3-c25f-449b-ba34-a5f5387fdb6d';
 
   void initScan() async {
@@ -68,8 +66,8 @@ class _MyHomePageState extends State<MyHomePage> {
       scanning = true;
     });
     FlutterBlue.instance
-        .startScan(scanMode: ScanMode.balanced, timeout: Duration(seconds: 10));
-    Timer(Duration(seconds: 10), () {
+        .startScan(scanMode: ScanMode.balanced, timeout: Duration(seconds: 20));
+    Timer(Duration(seconds: 20), () {
       setState(() {
         scanning = false;
       });
@@ -81,10 +79,10 @@ class _MyHomePageState extends State<MyHomePage> {
       lng = result.longitude.toString();
       lat = result.latitude.toString();
       writeLatChar.write(latin.encode('0$lat'), withoutResponse: true);
-      Timer(Duration(milliseconds: 300), (){
+      Timer(Duration(milliseconds: 300), () {
         writeLatChar.write(latin.encode('1$lng'), withoutResponse: true);
       });
-      
+
       print('$lat , $lng');
     });
   }
@@ -110,12 +108,8 @@ class _MyHomePageState extends State<MyHomePage> {
           setState(() {
             writeLatChar = c;
           });
-        } else if (uid == writeLngCharId) {
-          setState(() {
-            writeLngChar = c;
-          });
         }
-        if (writeLatChar != null && writeLngChar != null) {
+        if (writeLatChar != null) {
           setState(() {
             loading = false;
           });
@@ -156,7 +150,11 @@ class _MyHomePageState extends State<MyHomePage> {
                     subtitle: Text(r.device.id.toString()),
                     onTap: () async {
                       device = r.device;
-                      await device.connect();
+                      try {
+                        await device.connect();
+                      } catch (e) {
+                        print("ja conectado");
+                      }
                       setState(() {
                         id = r.device.id.toString();
                       });
